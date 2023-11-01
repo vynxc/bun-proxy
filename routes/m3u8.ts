@@ -37,7 +37,7 @@ function buildSuffix(forcedHeadersProxy: string | undefined, encodedHeaders:stri
     if (headers != '{}') {
         suffix += `/${encodeURIComponent(headers)}`
     }
-    if (forcedHeadersProxy || forcedHeadersProxy != '{}') {
+    if (forcedHeadersProxy && forcedHeadersProxy != '{}') {
         suffix += `?forcedHeadersProxy=${encodeURIComponent(forcedHeadersProxy)}`
     }
     return suffix;
