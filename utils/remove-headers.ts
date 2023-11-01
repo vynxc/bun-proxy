@@ -1,23 +1,23 @@
 
-const possibleCorsHeaders = [ "access-control-allow-origin",
-"access-control-allow-methods",
-"access-control-allow-headers",
-"access-control-max-age",
-"access-control-allow-credentials",
-"access-control-expose-headers",
-"access-control-request-method",
-"access-control-request-headers",
-"origin",
-"vary",
-"date",
-"referer",
-"server",
-"x-cache",
-"via",
-"x-amz-cf-pop",
-"x-amz-cf-id",
-"transfer-encoding",
-"x-powered-by"];
+const possibleCorsHeaders = ["access-control-allow-origin",
+    "access-control-allow-methods",
+    "access-control-allow-headers",
+    "access-control-max-age",
+    "access-control-allow-credentials",
+    "access-control-expose-headers",
+    "access-control-request-method",
+    "access-control-request-headers",
+    "origin",
+    "vary",
+    "date",
+    "referer",
+    "server",
+    "x-cache",
+    "via",
+    "x-amz-cf-pop",
+    "x-amz-cf-id",
+    "transfer-encoding",
+    "x-powered-by"];
 
 export function removeHeaders(headers: Record<string, string>) {
 
@@ -36,11 +36,10 @@ export function removeHeaders(headers: Record<string, string>) {
 function removeDuplicatesFromRecordByKey(inputRecord: Record<string, string>): Record<string, string> {
     const uniqueKeys = Array.from(new Set(Object.keys(inputRecord)));
     const resultRecord: Record<string, string> = {};
-  
+
     uniqueKeys.forEach((key) => {
-      resultRecord[key] = inputRecord[key];
+        resultRecord[key] = inputRecord[key];
     });
-  
+
     return resultRecord;
-  }
-  
+}
