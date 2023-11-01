@@ -16,5 +16,11 @@ app.get("/", (req, res) => {
 routes.forEach((route) => app.use(route));
 
 app.listen(port, () => {
-    console.log(`Listening on port ${port}...`);
+    if (!process.env.PORT) {
+        console.warn(`No PORT environment variable found, defaulting to ${port}.`);
+    }
+    if (!process.env.PROXY_URL) {
+        console.warn(`No PROXY_URL environment variable found! This may cause issues. Defaulting to ${process.env.PROXY_URL ?? process.env.PORT ? `http://localhost:${process.env.PORT}/` : "http://localhost:8080"}.`);
+    }
+    console.log(`Listening on port ${port}. Proxy URL is ${process.env.PROXY_URL ?? process.env.PORT ? `http://localhost:${process.env.PORT}/` : "http://localhost:8080"}.`);
 });

@@ -23,7 +23,6 @@ export const proxyRoute = router.use(
                 if (encodedheaders) {
                     headers = JSON.parse(decodeURIComponent(encodedheaders)) as Record<string, string>;
                 }
-
                 proxyReqOpts.headers = { ...proxyReqOpts.headers, ...headers };
                 removeHeaders(proxyReqOpts.headers as Record<string, string>);
                 return proxyReqOpts;
@@ -39,11 +38,8 @@ export const proxyRoute = router.use(
                 return headers;
             },
             proxyErrorHandler(err, res, next) {
-                if (err.message) {
-                    res.status(500).json({ error: err.message });
-                } else {
-                    res.status(500).json({ error: "Internal server error" });
-                }
+                if (err.message) res.status(500).json({ error: err.message });
+                else res.status(500).json({ error: "Internal server error" });
             },
         },
     ),

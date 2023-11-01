@@ -1,7 +1,4 @@
 export class M3U8Parser {
-    private static getParamsRegex(): RegExp {
-        return /\?.+/;
-    }
     public static readonly listOfPlaylistKeywords: string[] = ["#EXT-X-STREAM-INF", "#EXT-X-I-FRAME-STREAM-INF"];
 
     public static fixAllUrlsToAbsolute(lines: string[], url: string, prefix: string, suffix: string): string {
@@ -26,7 +23,7 @@ export class M3U8Parser {
 
     public static isPlaylistM3U8(lines: string[]): boolean {
         let isPlaylistM3U8 = false;
-        const maxIterations = Math.min(lines.length, 10); // Ensure we don't exceed the array length
+        const maxIterations = Math.min(lines.length, 10);
 
         for (let i = 0; i < maxIterations; i++) {
             for (let j = 0; j < this.listOfPlaylistKeywords.length; j++) {
@@ -37,7 +34,10 @@ export class M3U8Parser {
 
             if (isPlaylistM3U8) break;
         }
-
         return isPlaylistM3U8;
+    }
+
+    private static getParamsRegex(): RegExp {
+        return /\?.+/;
     }
 }

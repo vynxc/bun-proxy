@@ -7,8 +7,6 @@ export async function makeRequest(url: string, headers: Record<string, string>):
     try {
         return await fetch(url, requestOptions);
     } catch (error) {
-        999;
-        console.error(error);
         return null;
     }
 }
