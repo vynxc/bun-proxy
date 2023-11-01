@@ -1,43 +1,64 @@
-import express from "express";
-import { makeRequest } from "../utils/make-request";
-import { M3U8Parser } from "../utils/m3u8-parser";
-import { getUrl } from "../utils/get-url";
-import { removeHeaders } from "../utils/remove-headers";
+import express, { Request, Response } from "express";
+import { M3U8Parser, getUrl, makeRequest, removeHeaders } from "../utils";
 
 const router = express.Router();
 
-export const m3u8 = router.get("/proxy/m3u8/:url/:headers?/:type?", async (req, res) => {
-    const encodedheaders = req.params.headers;
-    let headers: Record<string, string> = {};
-    let headersString = "";
-    if (encodedheaders) {
-        headersString = decodeURIComponent(encodedheaders);
-        headers = JSON.parse(headersString) as Record<string, string>;
-    }
-    const forcedHeadersProxy = (req.query.forcedHeadersProxy ?? "{}") as string;
-    const url = decodeURIComponent(req.params.url);
-    const response = await makeRequest(url, headers);
-    if (!response || !response.ok) {
-        res.status(500).json({
-            error: `Request to url ${url} failed with status code ${response?.status ?? "...its is what it is"}`,
-        });
-        return;
-    }
-    const headersToReAdd: Record<string, string> = {};
-    response.headers.forEach((value, key) => {
-        headersToReAdd[key] = value;
-    });
-    removeHeaders(headersToReAdd);
-    for (const key in headersToReAdd) {
-        res.setHeader(key, headersToReAdd[key]);
-    }
-    const content = await response.text();
-    const lines = content.split("\n");
-    const isPlaylist = M3U8Parser.isPlaylistM3U8(lines);
-    const forcedHeadersString = forcedHeadersProxy == "{}" ? "" : `?forcedHeadersProxy=${encodeURIComponent(forcedHeadersProxy)}`;
+export const m3u8Route = router.get("/proxy/m3u8/:url/:headers?/:type?", async (req: Request, res: Response) => {
+    try {
+        const { url, headers: encodedHeaders } = req.params;
+        const headers = parseHeaders(encodedHeaders);
+        const response = await makeRequest(url, headers);
 
-    let suffix = headersString == "{}" ? "" : encodeURIComponent(headersString) + forcedHeadersString;
-    if (suffix != "") suffix = "/" + suffix;
-    var finalContent = M3U8Parser.fixAllUrlsToAbsolute(lines, url, getUrl(isPlaylist), suffix);
-    res.send(finalContent);
+        if (!response || !response.ok) {
+            return res.status(response?.status || 500).send(`Request to URL ${url} failed`);
+        }
+
+        const content = await response.text();
+        const lines = content.split("\n");
+        const isPlaylist = M3U8Parser.isPlaylistM3U8(lines);
+        const suffix = buildSuffix(req.query.forcedHeadersProxy as string | undefined);
+        const finalContent = M3U8Parser.fixAllUrlsToAbsolute(lines, url, getUrl(isPlaylist), suffix);
+        const headersRecord: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+            headersRecord[key] = value;
+        });
+        sendResponse(res, headersRecord, finalContent);
+    } catch (error: any) {
+        res.status(500).send(`An error occurred: ${error?.message ?? "Unknown error"}`);
+    }
 });
+
+function parseHeaders(encodedHeaders: string | undefined): Record<string, string> {
+    const decodedHeaders = decodeURIComponent(encodedHeaders || "");
+    return decodedHeaders ? JSON.parse(decodedHeaders) : {};
+}
+
+function buildSuffix(forcedHeadersProxy: string | undefined): string {
+    if (!forcedHeadersProxy || forcedHeadersProxy === "{}") {
+        return "";
+    } else {
+        return `?forcedHeadersProxy=${encodeURIComponent(forcedHeadersProxy)}`;
+    }
+}
+
+function sendResponse(res: Response, headers: Record<string, string>, content: string) {
+    const headersToReAdd = prepareHeadersToReAdd(headers);
+    removeHeaders(headersToReAdd);
+
+    for (const [key, value] of Object.entries(headersToReAdd)) {
+        res.setHeader(key, value);
+    }
+
+    res.send(content);
+}
+
+function prepareHeadersToReAdd(headers: Record<string, string>): Record<string, string> {
+    const headersToReAdd: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(headers)) {
+        if (!["transfer-encoding", "content-encoding"].includes(key.toLowerCase())) {
+            headersToReAdd[key] = value;
+        }
+    }
+    return headersToReAdd;
+}
