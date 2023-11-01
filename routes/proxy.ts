@@ -6,6 +6,7 @@ const router = express.Router();
 
 
 export const proxyRoute = router.use("/proxy/:url/:headers?", proxy(function (req) {
+    console.log(decodeURIComponent(req.params.url))
     return decodeURIComponent(req.params.url)
 }, {
     proxyReqPathResolver: function (req) {
@@ -21,6 +22,8 @@ export const proxyRoute = router.use("/proxy/:url/:headers?", proxy(function (re
             headers = JSON.parse(decodeURIComponent(encodedheaders)) as Record<string, string>;
         }
         proxyReqOpts.headers = { ...proxyReqOpts.headers, ...headers }
+        removeHeaders(proxyReqOpts.headers as Record<string, string>)
+        console.log(proxyReqOpts.headers)
         return proxyReqOpts;
     },
     userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
@@ -31,7 +34,7 @@ export const proxyRoute = router.use("/proxy/:url/:headers?", proxy(function (re
         for (const key in headersToReAdd) {
             headers[key] = headersToReAdd[key];
         }
-        removeHeaders(headers as Record<string, string>)
+        removeHeaders(headers)
         return headers;
     },
     proxyErrorHandler(err, res, next) {

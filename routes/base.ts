@@ -19,7 +19,7 @@ export const baseRoute = router.use("*", proxy(function (req) {
         return path;
     },
     userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
-        removeHeaders(headers as Record<string, string>)
+        removeHeaders(headers)
         return headers;
     },
     proxyErrorHandler(err, res, next) {
