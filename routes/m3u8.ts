@@ -15,7 +15,7 @@ export const m3u8Route = router.get("/proxy/m3u8/:url/:headers?/:type?", async (
         const content = await response.text();
         const lines = content.split("\n");
         const isPlaylist = M3U8Parser.isPlaylistM3U8(lines);
-        const suffix = buildSuffix(req.query.forcedHeadersProxy as string | undefined);
+        const suffix = buildSuffix(req.query.forcedHeadersProxy as string | undefined,encodedHeaders as string | undefined);
         const finalContent = M3U8Parser.fixAllUrlsToAbsolute(lines, url, getUrl(isPlaylist), suffix);
         const headersRecord: Record<string, string> = {};
         response.headers.forEach((value, key) => { headersRecord[key] = value; });
@@ -30,13 +30,17 @@ function parseHeaders(encodedHeaders: string | undefined): Record<string, string
     return decodedHeaders ? JSON.parse(decodedHeaders) : {};
 }
 
-function buildSuffix(forcedHeadersProxy: string | undefined): string {
+function buildSuffix(forcedHeadersProxy: string | undefined, encodedHeaders:string | undefined): string {
 
-    if (!forcedHeadersProxy || forcedHeadersProxy === '{}') {
-        return '';
-    } else {
-        return `?forcedHeadersProxy=${encodeURIComponent(forcedHeadersProxy)}`
+    const headers = decodeURIComponent(encodedHeaders ?? "{}");
+    let suffix = "";
+    if (headers != '{}') {
+        suffix += `/${encodeURIComponent(headers)}`
     }
+    if (forcedHeadersProxy || forcedHeadersProxy != '{}') {
+        suffix += `?forcedHeadersProxy=${encodeURIComponent(forcedHeadersProxy)}`
+    }
+    return suffix;
 }
 
 
