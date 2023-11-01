@@ -21,5 +21,12 @@ export const baseRoute = router.use("*", proxy(function (req) {
     userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
         removeHeaders(headers as Record<string, string>)
         return headers;
-    }
+    },
+    proxyErrorHandler(err, res, next) {
+        console.error(err);
+        if(err.message)
+            res.status(500).json({ error: err.message });
+        else
+            res.status(500).json({ error: "Internal server error" });
+    },
 }));

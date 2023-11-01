@@ -33,7 +33,14 @@ export const proxyRoute = router.use("/proxy/:url/:headers?", proxy(function (re
         }
         removeHeaders(headers as Record<string, string>)
         return headers;
-    }
+    },
+    proxyErrorHandler(err, res, next) {
+        console.error(err);
+        if(err.message)
+            res.status(500).json({ error: err.message });
+        else
+            res.status(500).json({ error: "Internal server error" });
+    },
 
 
 }));
