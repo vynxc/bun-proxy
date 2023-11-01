@@ -23,26 +23,26 @@ export const proxyRoute = router.use(
                 if (encodedheaders) {
                     headers = JSON.parse(decodeURIComponent(encodedheaders)) as Record<string, string>;
                 }
+
                 proxyReqOpts.headers = { ...proxyReqOpts.headers, ...headers };
+                removeHeaders(proxyReqOpts.headers as Record<string, string>);
                 return proxyReqOpts;
             },
             userResHeaderDecorator(headers, userReq, userRes, proxyReq, proxyRes) {
                 userReq.query.forcedHeadersProxy = userReq.query.forcedHeadersProxy ?? "{}";
                 const forcedHeadersProxy = decodeURIComponent(userReq.query.forcedHeadersProxy as string);
                 const headersToReAdd = JSON.parse(forcedHeadersProxy) as Record<string, string>;
-                console.log(headersToReAdd);
                 for (const key in headersToReAdd) {
                     headers[key] = headersToReAdd[key];
                 }
-                removeHeaders(headers as Record<string, string>);
+                removeHeaders(headers);
                 return headers;
             },
             proxyErrorHandler(err, res, next) {
-                console.error(err);
                 if (err.message) {
                     res.status(500).json({ error: err.message });
                 } else {
-                    res.status(500).json({ error: "Internal server error." });
+                    res.status(500).json({ error: "Internal server error" });
                 }
             },
         },
