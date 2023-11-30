@@ -24,5 +24,5 @@ export function removeHeaders(headers: any) {
         delete headers[key];
     }
     headers['Access-Control-Allow-Origin'] = '*';
+    headers['Cross-Origin-Resource-Policy'] = '*'
 }
-
